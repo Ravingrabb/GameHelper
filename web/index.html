@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <title>GameHelper</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script src="eel.js"></script>
+    <!-- CSS -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+
+  </head>
+  <body>
+
+    <div class="container">
+        <h1>GameHelper</h1>
+        <div class="form-group">
+          <input id='search-field' type="text" autocomplete="off" placeholder="Введите название игры" oninput="live_search()">
+          <button onclick="find_game()" type="submit" class="btn btn-primary">Найти игру</button>
+          <div class="search-results"><div class="search-placeholder"></div><table class='search-results-table'></table></div>
+        </div>
+        <div class="result-window">
+            <div class="row mt-5">
+                <div class="col">
+                    <p>AppID:</p>
+                    <input id='app-id' onClick="this.select();" type="text" value="">
+                </div>
+                <div class="col">
+                    <h2 id='app-name'></h2>
+                    <img id='app-img' width="70%">
+                </div>
+            </div>
+    
+            <div class="row">
+              <div class="col">
+                <p><b>Русский язык:</b></p>
+                <p id="app-lang"></p>
+              </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                  <p><b>Игроков за 30 дней:</b></p>
+                  <p id="players_30"></p>
+                </div>
+                <div class="col">
+                    <p><b>Конфиги:</b></p>
+                    <p id="configs"></p>
+                </div>
+            </div>
+        </div> 
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+    $(document).ready(function()
+    {
+        mouse_is_inside=false;
+        $('.search-results').hover(function(){ 
+            mouse_is_inside=true; 
+        }, function(){ 
+            mouse_is_inside=false; 
+        });
+
+        $("body").mouseup(function(){ 
+            if(! mouse_is_inside) $('.search-results').hide();
+        });
+    });
+
+        function show_result_window(){
+            $('.result-window').css('visibility', 'visible')
+        }
+
+        async function find_game(){
+            let game_name = $('#search-field').val()
+            let data = await eel.get_games_list(game_name)();
+            if (data == 'not found'){
+                    $('.search-placeholder').text('Ничего не найдено')
+                }
+            else {
+                console.log(data);
+                get_data_by_id(data[0][0], data[0][3])
+            }
+        }
+        
+
+        async function get_game_data(old_result){
+            new_result = $('#search-field').val()
+            if (new_result == old_result) {
+                let data = await eel.get_games_list(old_result)();
+                console.log(data);
+                $('.search-placeholder').text('')
+                if (data == 'not found'){
+                    $('.search-placeholder').text('Ничего не найдено')
+                }
+                else {
+                    data.forEach(element => $('.search-results-table').append('<tr class="game-card" onclick="get_data_by_click()" id="'+element[0]+'" players_num="'+element[3]+'"><td><img src="'+element[2]+'"></img></td><td>'+element[1]+'</td></tr>'));
+                }
+            }
+        }
+
+
+        async function live_search(){
+            let game_name = $('#search-field').val()
+            if (game_name == ''){
+                $('.search-results').hide(800)
+            }
+            else {
+                $('.search-placeholder').text('Поиск...')
+                $('.search-results').show(800)
+                setTimeout(async function() {
+                    $('.search-results-table').html('')
+                    get_game_data(game_name);
+                }, 400)
+            }
+        }
+
+
+        async function open_browser(){
+            element = $(event.target)
+            eel.open_browser($(element).attr('url'))()
+        }
+
+
+        async function get_data_by_click(){
+            element = $(event.target)
+            if ($(element).prop("tagName") == 'TD' || $(element).prop("tagName") == 'IMG'){
+                element = element.parent()
+            }
+            get_data_by_id($(element).attr('id'), $(element).attr('players_num'))
+        }
+
+
+        async function get_data_by_id(game_id, players_num){
+            $('.search-results').hide(800)
+            let res = await eel.get_game_by_id(game_id)();
+            if (res == 'game not found') { $('#app-id').val('game not found') }
+            else {
+                show_result_window()
+                $('#app-id').val(res[0])
+                $('#app-name').text(res[1])
+                $('#app-img').attr('src', res[2])
+                if (res[3]){ $('#app-lang').text('Поддерживается').css('color','#8cff8c') }
+                else { $('#app-lang').text("Не поддерживается").css('color','#fdb1b1') }
+                $('#players_30').text(players_num)
+                game_name = res[1]
+                if (game_name.includes("®")){game_name = game_name.replace("®", '')}
+                if (game_name.includes("™")){game_name = game_name.replace("™", '')}
+                game_name_to_url = 'https://www.pcgamingwiki.com/w/index.php?search=' + res[1].replace(/ /ig, '+')
+                $('#configs').html('<button url="'+game_name_to_url+'" onclick="open_browser()" type="button" class="btn btn-light">pcgamingwiki</button>')
+            }
+        }
+
+
+    </script>
+    <script src="./js/bootstrap.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+body {
+    background: #614385;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #516395, #614385);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #516395, #614385); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+
+h1, h2, h3, h4, h5, p {
+    color: azure;
+}
+
+.search-results{
+    border: black 1px solid;
+    border-radius: 5px;
+    position: absolute;
+    background-color: aliceblue;
+    width: 450px;
+    height: auto;
+    padding: 20px;
+    top: 89px;
+    display: none;
+}
+
+.game-card:hover {
+    background-color:rgba(35, 38, 41, 0.267);
+    cursor: pointer;
+}
+
+.result-window{
+    visibility: hidden;
+}

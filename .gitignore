@@ -1,0 +1,11 @@
+.vscode
+build
+dist
+Include
+Lib
+Scripts
+venv
+app.spec
+key.py
+__pycache__
+pyvenv.cfg
